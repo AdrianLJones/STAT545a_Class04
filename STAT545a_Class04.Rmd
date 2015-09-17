@@ -1,0 +1,136 @@
+---
+title: "STAT545a_Class04"
+author: "Adrian jones"
+date: "September 17, 2015"
+output: html_document
+---
+
+##We are using the gapminder library way to work on stuff
+
+First we'll initialise the world and load in gapminder
+
+```{r}
+rm(list = ls())
+
+library(gapminder)
+library(ggplot2)
+
+str(gapminder)
+````
+
+This should show a data.frame object.  Like we know, they are supper useful things b/c we can put anything we want in them.
+
+str is a useful function that shows the structure of an object, including telling you the dimension of things, what type of variable (factor, numeric, string etc) is in each column etc.
+
+```{r}
+head(gapminder)
+
+tail(gapminder)
+
+gapminder[sample(nrow(gapminder), 10),]
+```
+
+Looking at the head and tail and a random sample of the data set reasures us that the data loaded happily.  Particularly the random sample is clever.
+
+sample size 10, x is number of rows in gapminder, then it is a normal data.frame assignment
+
+##Lets plot some Graphs
+
+Because graphs are always good
+
+```{r}
+plot(lifeExp ~ year, data = gapminder)
+
+plot(lifeExp ~ gdpPercap, data = gapminder)
+```
+
+Jennifer did something interesting by using the formual call instead of the usual x,y call of plot.   But it gave the same thing.  Is it better?  I dunno.
+
+So with the gdp plot, probably a log scale would show things to better effect.
+
+```{r}
+plot(lifeExp ~ log(gdpPercap), gapminder)
+```
+
+##Now we should probably have a look at individual variables
+
+###lifeExp
+
+```{r}
+head(gapminder$lifeExp)
+tail(gapminder$lifeExp)
+summary(gapminder$lifeExp)
+hist(gapminder$lifeExp)
+
+```
+
+We grind through variables to see what they are like, histogram, density plot ext
+
+###What about year?
+
+```{r}
+summary(gapminder$year)
+class(gapminder$year)
+#But it isn't a great nummeric
+
+table(gapminder$year)
+```
+
+###continent
+Its a factor, we can check that with the 
+
+> class
+
+Function
+
+```{r}
+class(gapminder$continent)
+levels(gapminder$continent)
+table(gapminder$continent)
+```
+
+#### A side comment on Factors
+Intesrestingly when something is a factor it is alwayus stored as numerics and then tied to a value for that factor.  Ie in this situation continents are 1:5
+
+R did this automatically when it read the data as a table.
+That behaviour can be supressed with the argument
+
+> strings.as.factor=FALSE
+
+in the various read.XX functions.
+
+Tools in the Hadelyverse tend to avoid this problem as default
+
+
+####So back to the continents
+We still need a plot
+
+```{r}
+barplot(table(gapminder$continent))
+```
+## Halajuya it is ggplot2 time
+
+```{r}
+library(ggplot2)
+p <- ggplot(subset(gapminder, continent != "Oceania"),
+            aes(x = gdpPercap, y = lifeExp)) # just initializes
+p <- p + scale_x_log10() # log the x axis the right way
+p + geom_point() # scatterplot
+p + geom_point(aes(color = continent)) # map continent to color
+p + geom_point(alpha = (1/3), size = 3) + geom_smooth(lwd = 3, se = FALSE)
+## geom_smooth: method="auto" and size of largest group is >=1000, so using gam with formula: y ~ s(x, bs = "cs"). Use 'method = x' to change the smoothing method.
+p + geom_point(alpha = (1/3), size = 3) + facet_wrap(~ continent)
+```
+> How does this stuff work?  I have no clue and should figure it out
+
+##OTher options including subsets of stuff
+Lots of things have a argument
+
+> subset
+
+Which lets you subset based upon things other than matrix indicies, which is a really good thing when you don't want to have to comment the heck out of your stuff later on
+
+```{r}
+subset(gapminder, subset = country == "Uruguay")
+```
+
